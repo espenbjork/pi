@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>π-pugger</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f4ef;
+    --surface: #ffffff;
+    --ink: #1a1814;
+    --ink2: #6b6860;
+    --ink3: #b0ada6;
+    --accent: #c84b2f;
+    --accent-soft: #fdf5f3;
+    --ok: #2f6b4b;
+    --ok-soft: #f0f8f4;
+    --border: #e2ddd6;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Fraunces', Georgia, serif;
+  }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2.5rem, 6vw, 3.75rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  header h1 span { color: var(--accent); font-style: italic; }
+  header p {
+    font-size: 0.72rem;
+    color: var(--ink2);
+    margin-top: 0.4rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 1rem;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 640px;
+  }
+  .stat { background: var(--surface); padding: 1rem; text-align: center; }
+  .stat-val { font-family: var(--serif); font-weight: 300; font-size: 1.85rem; line-height: 1; }
+  .stat-lbl { font-size: 0.65rem; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+
+  .mode-row { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .tab {
+    flex: 1;
+    padding: 10px 6px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab:hover { background: var(--bg); color: var(--ink); }
+  .tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .section-label {
+    font-size: 0.65rem;
+    color: var(--ink3);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+
+  .range-inputs { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+  .range-inputs label { font-size: 0.78rem; color: var(--ink2); }
+
+  .num-input {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 7px 10px;
+    width: 70px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    outline: none;
+    text-align: center;
+  }
+  .num-input:focus { border-color: var(--ink2); }
+
+  .preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .preset {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--ink2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset:hover { background: var(--bg); color: var(--ink); }
+
+  .pi-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem;
+    margin-bottom: 1.25rem;
+    font-family: var(--mono);
+    font-size: 1.15rem;
+    line-height: 2.1;
+    letter-spacing: 0.05em;
+    word-break: break-all;
+    min-height: 70px;
+  }
+
+  .digit {
+    display: inline-block;
+    width: 1.15em;
+    text-align: center;
+    position: relative;
+  }
+  .digit.shown { color: var(--ink); }
+  .digit.out-of-range { color: var(--ink3); opacity: 0.4; }
+  .digit.correct { color: var(--ok); font-weight: 500; }
+  .digit.wrong { color: var(--accent); background: var(--accent-soft); border-radius: 3px; font-weight: 500; }
+  .digit.pending { color: var(--ink3); border-bottom: 2px solid var(--border); }
+  .digit.active { border-bottom: 2px solid var(--accent); color: var(--ink3); animation: blink 1.1s infinite; }
+
+  @keyframes blink { 50% { border-bottom-color: transparent; } }
+
+  .milestone-marker {
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    background: var(--ink3);
+    border-radius: 50%;
+    margin: 0 6px;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+  }
+  .milestone-marker.passed { background: var(--ok); box-shadow: 0 0 0 2px var(--ok-soft); }
+  .milestone-marker.failed { background: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+
+  .dot { color: var(--ink2); margin: 0 1px; }
+
+  .actions-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--ink2);
+  }
+  .btn:hover { background: var(--bg); color: var(--ink); }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn-primary:hover { opacity: 0.85; color: var(--bg); }
+  .btn-danger { color: var(--accent); }
+  .btn-danger:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+  .status-line {
+    font-size: 0.78rem;
+    color: var(--ink2);
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .status-line b { font-weight: 500; color: var(--ink); }
+
+  .feedback {
+    min-height: 20px;
+    font-size: 0.8rem;
+    margin-top: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--accent); }
+
+  .banner {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+    display: none;
+    border: 1px solid transparent;
+  }
+  .banner.visible { display: block; }
+  .banner.ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+  .banner.bad { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+  .reset-section { text-align: center; padding: 1rem 1.5rem; }
+  .reset-section p { font-size: 0.72rem; color: var(--ink3); margin-bottom: 0.75rem; letter-spacing: 0.05em; }
+  #confirm-reset { display: none; margin-top: 10px; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  #confirm-reset.visible { display: flex; }
+
+  footer {
+    margin-top: 2rem;
+    font-size: 0.68rem;
+    color: var(--ink3);
+    letter-spacing: 0.08em;
+    text-align: center;
+    max-width: 620px;
+  }
+
+  .hidden-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+  }
+  .typing-area { position: relative; cursor: text; }
+  .small-hint { font-size: 0.7rem; color: var(--ink3); margin-top: 6px; letter-spacing: 0.04em; }
+
+  .lang-toggle {
+    position: fixed;
+    top: 12px;
+    right: 14px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink2);
+    cursor: pointer;
+    z-index: 10;
+  }
+  .lang-toggle:hover { background: var(--bg); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
+
+<header>
+  <h1><span>π</span><span id="h-title">-pugger</span></h1>
+  <p id="h-subtitle"></p>
+</header>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-val" id="stat-max">0</div><div class="stat-lbl" id="lbl-max"></div></div>
+  <div class="stat"><div class="stat-val" id="stat-streak">0</div><div class="stat-lbl">Streak</div></div>
+  <div class="stat"><div class="stat-val" id="stat-today">0</div><div class="stat-lbl" id="lbl-today"></div></div>
+</div>
+
+<div class="card">
+  <div class="mode-row">
+    <button class="tab active" data-mode="learn" onclick="setMode('learn')" id="tab-learn"></button>
+    <button class="tab" data-mode="practice" onclick="setMode('practice')" id="tab-practice"></button>
+  </div>
+
+  <div class="section-label" id="lbl-range"></div>
+  <div class="range-inputs">
+    <label id="lbl-from"></label>
+    <input type="number" id="range-from" class="num-input" min="1" max="500" value="1" onchange="onRangeChange()">
+    <label id="lbl-to"></label>
+    <input type="number" id="range-to" class="num-input" min="1" max="500" value="10" onchange="onRangeChange()">
+  </div>
+  <div class="preset-row">
+    <button class="preset" onclick="applyPreset(1,10)">1–10</button>
+    <button class="preset" onclick="applyPreset(1,20)">1–20</button>
+    <button class="preset" onclick="applyPreset(1,50)">1–50</button>
+    <button class="preset" onclick="applyPreset(1,100)">1–100</button>
+    <button class="preset" onclick="nextTen()" id="btn-next10"></button>
+    <button class="preset" onclick="allKnown()" id="btn-allknown"></button>
+  </div>
+
+  <div class="status-line" id="status-line"></div>
+  <div class="banner" id="banner"></div>
+
+  <div class="typing-area" id="typing-area" onclick="focusInput()">
+    <div class="pi-wrap" id="pi-display"></div>
+    <input type="text" id="hidden-input" class="hidden-input" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off" inputmode="numeric">
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-primary" id="main-action" onclick="mainAction()"></button>
+    <button class="btn" onclick="toggleReveal()" id="reveal-btn" style="display:none;"></button>
+    <button class="btn" onclick="resetAttempt()" id="btn-restart"></button>
+    <button class="btn" onclick="deleteLast()" id="backspace-btn" style="display:none;"></button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+  <div class="small-hint" id="small-hint"></div>
+</div>
+
+<div class="card reset-section">
+  <p id="lbl-storage"></p>
+  <button class="btn btn-danger" onclick="promptReset()" id="btn-reset"></button>
+  <div id="confirm-reset">
+    <span style="font-size:0.78rem; color:var(--ink2); align-self:center;" id="lbl-sure"></span>
+    <button class="btn btn-danger" onclick="doReset()" id="btn-yes-reset"></button>
+    <button class="btn" onclick="cancelReset()" id="btn-cancel"></button>
+  </div>
+</div>
+
+<footer id="footer-text"></footer>
+
+<script>
+// ─── i18n ───────────────────────────────────────────────────
+const strings = {
+  no: {
+    title: "-pugger",
+    subtitle: "Velg rekke · lær · test",
+    statMax: "Lengst pugget",
+    statToday: "I dag",
+    tabLearn: "Lær",
+    tabPractice: "Øv",
+    rangeLabel: "Velg sifferrekke",
+    from: "Fra siffer",
+    to: "til",
+    next10: "Neste 10 nye",
+    allKnown: "Alle jeg kan",
+    goToPractice: "Gå til øving",
+    focusInput: "Fokuser input",
+    showAnswer: "Vis fasit",
+    hideAnswer: "Skjul fasit",
+    restart: "Start på nytt",
+    backspace: "⌫ Slett siste",
+    hintLearn: "Les og pugg sifrene i valgt rekke. Klikk «Gå til øving» når du er klar.",
+    hintPractice: "Klikk i boksen og begynn å skrive. Hvert siffer valideres umiddelbart. ⌫ for å rette.",
+    storage: "Fremgang lagres lokalt i nettleseren",
+    resetAll: "Nullstill all fremgang",
+    sure: "Sikker?",
+    yesReset: "Ja, nullstill",
+    cancel: "Avbryt",
+    footer: "π = 3,14159265358979323846… — opptil 500 siffer",
+    statusLearn: (f, t, n) => `<span>Rekke: <b>siffer ${f}–${t}</b> (${n} siffer)</span><span>Modus: <b>Lær</b></span>`,
+    statusPractice: (f, t, c, n, w) => `<span>Rekke: <b>siffer ${f}–${t}</b></span><span><b>${c}</b>/${n} riktige · ${w} skrevet</span>`,
+    digitWrong: (pos, got, exp) => `✗ Siffer ${pos}: du skrev ${got}, riktig er ${exp}. Trykk ⌫ for å rette.`,
+    digitOk: (pos) => `✓ Siffer ${pos} riktig`,
+    milestoneOk: (pos) => `🎯 10-grense passert på siffer ${pos} — alt riktig så langt!`,
+    milestoneBad: (pos) => `10-grense på siffer ${pos}, men du har minst én feil bak deg.`,
+    allCorrect: (f, t, s) => `✓✓ Hele rekken ${f}–${t} riktig! Streak: ${s}`,
+    allCorrectBanner: (n) => `🏆 Perfekt! ${n} siffer riktig.`,
+    doneWithErrors: "Ferdig med feil. Bruk ⌫ for å rette eller «Start på nytt».",
+    langToggle: "EN",
+    digit: "siffer",
+  },
+  en: {
+    title: "-trainer",
+    subtitle: "Pick range · learn · test",
+    statMax: "Best memorized",
+    statToday: "Today",
+    tabLearn: "Learn",
+    tabPractice: "Practice",
+    rangeLabel: "Choose digit range",
+    from: "From digit",
+    to: "to",
+    next10: "Next 10 new",
+    allKnown: "All I know",
+    goToPractice: "Start practicing",
+    focusInput: "Focus input",
+    showAnswer: "Show answer",
+    hideAnswer: "Hide answer",
+    restart: "Start over",
+    backspace: "⌫ Delete last",
+    hintLearn: "Read and memorize the digits in the selected range. Click \"Start practicing\" when ready.",
+    hintPractice: "Click the box and start typing. Each digit is validated instantly. ⌫ to correct.",
+    storage: "Progress is stored locally in your browser",
+    resetAll: "Reset all progress",
+    sure: "Are you sure?",
+    yesReset: "Yes, reset",
+    cancel: "Cancel",
+    footer: "π = 3.14159265358979323846… — up to 500 digits",
+    statusLearn: (f, t, n) => `<span>Range: <b>digits ${f}–${t}</b> (${n} digits)</span><span>Mode: <b>Learn</b></span>`,
+    statusPractice: (f, t, c, n, w) => `<span>Range: <b>digits ${f}–${t}</b></span><span><b>${c}</b>/${n} correct · ${w} typed</span>`,
+    digitWrong: (pos, got, exp) => `✗ Digit ${pos}: you typed ${got}, correct is ${exp}. Press ⌫ to fix.`,
+    digitOk: (pos) => `✓ Digit ${pos} correct`,
+    milestoneOk: (pos) => `🎯 10-digit mark at digit ${pos} — all correct so far!`,
+    milestoneBad: (pos) => `10-digit mark at digit ${pos}, but you have at least one error behind you.`,
+    allCorrect: (f, t, s) => `✓✓ Full range ${f}–${t} correct! Streak: ${s}`,
+    allCorrectBanner: (n) => `🏆 Perfect! ${n} digits correct.`,
+    doneWithErrors: "Done with errors. Use ⌫ to fix or \"Start over\".",
+    langToggle: "NO",
+    digit: "digit",
+  }
+};
+
+const isNorwegian = /^(no|nb|nn)/i.test(navigator.language);
+let lang = isNorwegian ? "no" : "en";
+
+function t(key) { return strings[lang][key]; }
+
+function applyLang() {
+  document.documentElement.lang = lang === "no" ? "no" : "en";
+  document.getElementById("h-title").textContent = t("title");
+  document.getElementById("h-subtitle").textContent = t("subtitle");
+  document.getElementById("lbl-max").textContent = t("statMax");
+  document.getElementById("lbl-today").textContent = t("statToday");
+  document.getElementById("tab-learn").textContent = t("tabLearn");
+  document.getElementById("tab-practice").textContent = t("tabPractice");
+  document.getElementById("lbl-range").textContent = t("rangeLabel");
+  document.getElementById("lbl-from").textContent = t("from");
+  document.getElementById("lbl-to").textContent = t("to");
+  document.getElementById("btn-next10").textContent = t("next10");
+  document.getElementById("btn-allknown").textContent = t("allKnown");
+  document.getElementById("btn-restart").textContent = t("restart");
+  document.getElementById("backspace-btn").textContent = t("backspace");
+  document.getElementById("lbl-storage").textContent = t("storage");
+  document.getElementById("btn-reset").textContent = t("resetAll");
+  document.getElementById("lbl-sure").textContent = t("sure");
+  document.getElementById("btn-yes-reset").textContent = t("yesReset");
+  document.getElementById("btn-cancel").textContent = t("cancel");
+  document.getElementById("footer-text").textContent = t("footer");
+  document.getElementById("lang-toggle").textContent = t("langToggle");
+
+  // Re-apply mode-dependent labels
+  const mainBtn = document.getElementById("main-action");
+  const hint = document.getElementById("small-hint");
+  const revealBtn = document.getElementById("reveal-btn");
+  if (mode === "learn") {
+    mainBtn.textContent = t("goToPractice");
+    hint.textContent = t("hintLearn");
+  } else {
+    mainBtn.textContent = t("focusInput");
+    hint.textContent = t("hintPractice");
+    revealBtn.textContent = revealedInPractice ? t("hideAnswer") : t("showAnswer");
+  }
+}
+
+function toggleLang() {
+  lang = lang === "no" ? "en" : "no";
+  applyLang();
+  render();
+}
+
+// ─── Pi data ────────────────────────────────────────────────
+// Position 1 = first decimal digit after "3,". The leading "3," is shown as a fixed prefix.
+const PI_DIGITS = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491";
+
+// ─── State ──────────────────────────────────────────────────
+function getState() {
+  try {
+    const raw = localStorage.getItem("pipugger_v4");
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { maxKnown: 0, streak: 0, best: 0, todayDate: "", todayCount: 0 };
+}
+function saveState() {
+  try { localStorage.setItem("pipugger_v4", JSON.stringify(state)); } catch(e) {}
+}
+
+let state = getState();
+let mode = "learn";
+let rangeFrom = 1;
+let rangeTo = 10;
+let typed = "";
+let practiceActive = false;
+let confirming = false;
+let revealedInPractice = false;
+let celebratedMilestones = new Set();
+
+const today = new Date().toISOString().slice(0,10);
+if (state.todayDate !== today) { state.todayDate = today; state.todayCount = 0; saveState(); }
+
+if (state.maxKnown >= 10) {
+  rangeFrom = state.maxKnown + 1;
+  rangeTo = Math.min(state.maxKnown + 10, PI_DIGITS.length);
+  document.getElementById("range-from").value = rangeFrom;
+  document.getElementById("range-to").value = rangeTo;
+}
+
+// ─── Mode ───────────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.mode === m));
+  typed = "";
+  practiceActive = false;
+  revealedInPractice = false;
+  celebratedMilestones.clear();
+  hideBanner();
+  document.getElementById("feedback").textContent = "";
+
+  const revealBtn = document.getElementById("reveal-btn");
+  const backspaceBtn = document.getElementById("backspace-btn");
+
+  if (m === "learn") {
+    revealBtn.style.display = "none";
+    backspaceBtn.style.display = "none";
+  } else {
+    revealBtn.style.display = "inline-block";
+    backspaceBtn.style.display = "inline-block";
+    setTimeout(focusInput, 50);
+  }
+  applyLang();
+  render();
+}
+
+function onRangeChange() {
+  let from = parseInt(document.getElementById("range-from").value) || 1;
+  let to = parseInt(document.getElementById("range-to").value) || from;
+  from = Math.max(1, Math.min(from, PI_DIGITS.length));
+  to = Math.max(from, Math.min(to, PI_DIGITS.length));
+  document.getElementById("range-from").value = from;
+  document.getElementById("range-to").value = to;
+  rangeFrom = from;
+  rangeTo = to;
+  typed = "";
+  practiceActive = false;
+  revealedInPractice = false;
+  celebratedMilestones.clear();
+  hideBanner();
+  document.getElementById("feedback").textContent = "";
+  render();
+}
+
+function applyPreset(a, b) {
+  document.getElementById("range-from").value = a;
+  document.getElementById("range-to").value = b;
+  onRangeChange();
+}
+function nextTen() {
+  const start = state.maxKnown + 1;
+  applyPreset(start, Math.min(start + 9, PI_DIGITS.length));
+}
+function allKnown() {
+  if (state.maxKnown < 1) { applyPreset(1, 10); return; }
+  applyPreset(1, state.maxKnown);
+}
+
+function focusInput() {
+  if (mode === "practice") {
+    practiceActive = true;
+    document.getElementById("hidden-input").focus();
+    render();
+  }
+}
+
+function mainAction() {
+  if (mode === "learn") setMode("practice");
+  else focusInput();
+}
+
+function resetAttempt() {
+  typed = "";
+  revealedInPractice = false;
+  celebratedMilestones.clear();
+  hideBanner();
+  document.getElementById("feedback").textContent = "";
+  render();
+  if (mode === "practice") focusInput();
+}
+
+function toggleReveal() {
+  revealedInPractice = !revealedInPractice;
+  document.getElementById("reveal-btn").textContent = revealedInPractice ? t("hideAnswer") : t("showAnswer");
+  render();
+}
+
+function deleteLast() {
+  if (mode !== "practice") return;
+  if (typed.length === 0) return;
+  typed = typed.slice(0, -1);
+  document.getElementById("feedback").textContent = "";
+  render();
+}
+
+function promptReset() {
+  confirming = !confirming;
+  document.getElementById("confirm-reset").classList.toggle("visible", confirming);
+}
+function cancelReset() {
+  confirming = false;
+  document.getElementById("confirm-reset").classList.remove("visible");
+}
+function doReset() {
+  state = { maxKnown: 0, streak: 0, best: 0, todayDate: today, todayCount: 0 };
+  saveState();
+  confirming = false;
+  document.getElementById("confirm-reset").classList.remove("visible");
+  applyPreset(1, 10);
+  setMode("learn");
+}
+
+// ─── Render ─────────────────────────────────────────────────
+function render() {
+  const el = document.getElementById("pi-display");
+  let html = "";
+  const showTo = Math.min(PI_DIGITS.length, rangeTo + 4);
+
+  if (rangeFrom === 1) {
+    html += `<span class="shown" style="color:var(--ink); font-weight:500;">3</span><span class="dot">,</span>`;
+  }
+
+  for (let pos = rangeFrom; pos <= showTo; pos++) {
+    const digit = PI_DIGITS[pos - 1];
+    const inRange = pos >= rangeFrom && pos <= rangeTo;
+    const typedIndex = pos - rangeFrom;
+    let cls = "digit";
+    let content = digit;
+
+    if (!inRange) {
+      cls += " out-of-range";
+    } else if (mode === "learn" || revealedInPractice) {
+      cls += " shown";
+    } else {
+      if (typedIndex < typed.length) {
+        if (typed[typedIndex] === digit) { cls += " correct"; content = typed[typedIndex]; }
+        else { cls += " wrong"; content = typed[typedIndex]; }
+      } else if (typedIndex === typed.length && practiceActive) {
+        cls += " active"; content = "·";
+      } else {
+        cls += " pending"; content = "·";
+      }
+    }
+
+    html += `<span class="${cls}">${content}</span>`;
+
+    if (pos % 10 === 0 && pos < showTo && pos >= rangeFrom && pos <= rangeTo) {
+      let markerCls = "milestone-marker";
+      if (mode === "practice" && !revealedInPractice) {
+        const uptoTyped = pos - rangeFrom + 1;
+        if (typed.length >= uptoTyped) {
+          let allOk = true;
+          for (let i = 0; i < uptoTyped; i++) {
+            if (typed[i] !== PI_DIGITS[rangeFrom - 1 + i]) { allOk = false; break; }
+          }
+          markerCls += allOk ? " passed" : " failed";
+        }
+      }
+      html += `<span class="${markerCls}"></span>`;
+    }
+  }
+
+  el.innerHTML = html;
+  updateStatus();
+  updateStats();
+}
+
+function updateStatus() {
+  const status = document.getElementById("status-line");
+  const rangeLen = rangeTo - rangeFrom + 1;
+  if (mode === "learn") {
+    status.innerHTML = t("statusLearn")(rangeFrom, rangeTo, rangeLen);
+  } else {
+    const c = countCorrectPrefix();
+    status.innerHTML = t("statusPractice")(rangeFrom, rangeTo, c, rangeLen, typed.length);
+  }
+}
+function updateStats() {
+  document.getElementById("stat-max").textContent = state.maxKnown;
+  document.getElementById("stat-streak").textContent = state.streak;
+  document.getElementById("stat-today").textContent = state.todayCount;
+}
+
+function countCorrectPrefix() {
+  let c = 0;
+  for (let i = 0; i < typed.length; i++) {
+    if (typed[i] === PI_DIGITS[rangeFrom - 1 + i]) c++;
+    else break;
+  }
+  return c;
+}
+
+function showBanner(msg, ok) {
+  const b = document.getElementById("banner");
+  b.textContent = msg;
+  b.className = "banner visible " + (ok ? "ok" : "bad");
+  clearTimeout(showBanner._t);
+  showBanner._t = setTimeout(hideBanner, 3500);
+}
+function hideBanner() {
+  document.getElementById("banner").classList.remove("visible");
+}
+
+// ─── Keyboard handler ───────────────────────────────────────
+document.addEventListener("keydown", (e) => {
+  if (mode !== "practice" || !practiceActive || revealedInPractice) return;
+  if (confirming) return;
+
+  if (e.key === "Backspace") { e.preventDefault(); deleteLast(); return; }
+  if (!/^[0-9]$/.test(e.key)) return;
+  e.preventDefault();
+
+  const rangeLen = rangeTo - rangeFrom + 1;
+  if (typed.length >= rangeLen) return;
+
+  const expectedDigit = PI_DIGITS[rangeFrom - 1 + typed.length];
+  const pressed = e.key;
+  typed += pressed;
+
+  const fb = document.getElementById("feedback");
+  const currentPos = rangeFrom + typed.length - 1;
+
+  if (pressed !== expectedDigit) {
+    fb.textContent = t("digitWrong")(currentPos, pressed, expectedDigit);
+    fb.className = "feedback bad";
+    state.streak = 0;
+    saveState();
+  } else {
+    fb.textContent = t("digitOk")(currentPos);
+    fb.className = "feedback ok";
+  }
+
+  if (currentPos % 10 === 0 && !celebratedMilestones.has(currentPos)) {
+    celebratedMilestones.add(currentPos);
+    let allOk = true;
+    for (let i = 0; i < typed.length; i++) {
+      if (typed[i] !== PI_DIGITS[rangeFrom - 1 + i]) { allOk = false; break; }
+    }
+    if (allOk) showBanner(t("milestoneOk")(currentPos), true);
+    else showBanner(t("milestoneBad")(currentPos), false);
+  }
+
+  if (typed.length === rangeLen) {
+    let allOk = true;
+    for (let i = 0; i < typed.length; i++) {
+      if (typed[i] !== PI_DIGITS[rangeFrom - 1 + i]) { allOk = false; break; }
+    }
+    if (allOk) {
+      state.streak++;
+      if (state.streak > state.best) state.best = state.streak;
+      state.todayCount += rangeLen;
+      if (rangeTo > state.maxKnown) state.maxKnown = rangeTo;
+      saveState();
+      fb.textContent = t("allCorrect")(rangeFrom, rangeTo, state.streak);
+      fb.className = "feedback ok";
+      showBanner(t("allCorrectBanner")(rangeLen), true);
+    } else {
+      fb.textContent = t("doneWithErrors");
+      fb.className = "feedback bad";
+    }
+  }
+
+  render();
+});
+
+document.getElementById("typing-area").addEventListener("click", focusInput);
+
+// ─── Init ───────────────────────────────────────────────────
+applyLang();
+setMode("learn");
+render();
+</script>
+</body>
+</html>
