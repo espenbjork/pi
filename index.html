@@ -272,6 +272,150 @@
     z-index: 10;
   }
   .lang-toggle:hover { background: var(--bg); color: var(--ink); }
+
+  /* ─── Achievements ──────────────────────────────────────── */
+  .ach-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1.25rem;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .ach-card-title {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 1.4rem;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .ach-card-sub {
+    font-size: 0.65rem;
+    color: var(--ink3);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .ach-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px 8px;
+  }
+  @media (max-width: 520px) {
+    .ach-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .ach {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px 4px 8px;
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s, transform 0.15s;
+    color: var(--ink3);
+    cursor: default;
+  }
+  /* Tier color tokens — these drive the badge ring/text via currentColor. */
+  .ach.tier-0 { color: var(--accent);  --tier-soft: var(--accent-soft); }   /* Vanlig — terracotta */
+  .ach.tier-1 { color: #9c5a2a;        --tier-soft: #f4ebe1; }               /* Bronze */
+  .ach.tier-2 { color: #6b8088;        --tier-soft: #eef1f2; }               /* Silver */
+  .ach.tier-3 { color: #b8861a;        --tier-soft: #f7f0d9; }               /* Gold */
+  .ach.tier-4 { color: #4a6b8a;        --tier-soft: #e8eef5; }               /* Platinum */
+  .ach.unlocked:hover {
+    background: var(--tier-soft);
+    transform: translateY(-1px);
+  }
+  .ach.just-unlocked { animation: pop 0.6s ease; }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+  .ach-svg { width: 58px; height: 58px; }
+  .ach-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.82rem;
+    margin-top: 6px;
+    line-height: 1.15;
+    color: var(--ink);
+    min-height: 1.15em;
+  }
+  .ach.locked .ach-name { color: var(--ink3); font-style: normal; }
+  .ach-tier {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 2px;
+    line-height: 1;
+    color: currentColor;
+    font-weight: 500;
+  }
+  .ach.tier-0 .ach-tier { opacity: 0.6; }
+  .ach-meta {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    color: var(--ink3);
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+  .ach-meta .count { color: currentColor; opacity: 0.85; }
+
+  .ach-toast {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--ink);
+    padding: 14px 22px;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+    font-family: var(--mono);
+    z-index: 100;
+    text-align: center;
+    max-width: 340px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+  }
+  .ach-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .ach-toast.tier-0 { border-color: var(--accent); }
+  .ach-toast.tier-1 { border-color: #9c5a2a; }
+  .ach-toast.tier-2 { border-color: #6b8088; }
+  .ach-toast.tier-3 { border-color: #b8861a; }
+  .ach-toast.tier-4 { border-color: #4a6b8a; }
+  .ach-toast-eyebrow {
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .ach-toast.tier-0 .ach-toast-eyebrow { color: var(--accent); }
+  .ach-toast.tier-1 .ach-toast-eyebrow { color: #9c5a2a; }
+  .ach-toast.tier-2 .ach-toast-eyebrow { color: #6b8088; }
+  .ach-toast.tier-3 .ach-toast-eyebrow { color: #b8861a; }
+  .ach-toast.tier-4 .ach-toast-eyebrow { color: #4a6b8a; }
+  .ach-toast-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.3rem;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .ach-toast-sub {
+    font-size: 0.72rem;
+    color: var(--ink2);
+    letter-spacing: 0.02em;
+  }
 </style>
 </head>
 <body>
@@ -330,6 +474,20 @@
   <div class="small-hint" id="small-hint"></div>
 </div>
 
+<div class="card">
+  <div class="ach-card-header">
+    <div class="ach-card-title" id="ach-title"></div>
+    <div class="ach-card-sub" id="ach-sub"></div>
+  </div>
+  <div class="ach-grid" id="ach-grid"></div>
+</div>
+
+<div class="ach-toast" id="ach-toast" role="status" aria-live="polite">
+  <div class="ach-toast-eyebrow" id="ach-toast-eyebrow"></div>
+  <div class="ach-toast-title" id="ach-toast-title"></div>
+  <div class="ach-toast-sub" id="ach-toast-sub"></div>
+</div>
+
 <div class="card reset-section">
   <p id="lbl-storage"></p>
   <button class="btn btn-danger" onclick="promptReset()" id="btn-reset"></button>
@@ -382,6 +540,14 @@ const strings = {
     doneWithErrors: "Ferdig med feil. Bruk ⌫ for å rette eller «Start på nytt».",
     langToggle: "EN",
     digit: "siffer",
+    achTitle: "Bragder",
+    achSub: "Lås opp ved å huske flere desimaler",
+    achToastUnlock: "Bragd opplåst",
+    achToastUpgrade: (tier) => `Oppgradert til ${tier}`,
+    achLockedName: "Låst",
+    achDigitsShort: "sif",
+    tierNames: ["Vanlig", "Bronze", "Sølv", "Gull", "Platina"],
+    tierUpgradeSub: (count) => `Du har truffet dette sifferet ${count} ganger`,
   },
   en: {
     title: "-trainer",
@@ -420,6 +586,14 @@ const strings = {
     doneWithErrors: "Done with errors. Use ⌫ to fix or \"Start over\".",
     langToggle: "NO",
     digit: "digit",
+    achTitle: "Achievements",
+    achSub: "Unlock by memorizing more digits",
+    achToastUnlock: "Achievement unlocked",
+    achToastUpgrade: (tier) => `Upgraded to ${tier}`,
+    achLockedName: "Locked",
+    achDigitsShort: "dig",
+    tierNames: ["Standard", "Bronze", "Silver", "Gold", "Platinum"],
+    tierUpgradeSub: (count) => `You've hit this digit ${count} times`,
   }
 };
 
@@ -450,6 +624,8 @@ function applyLang() {
   document.getElementById("btn-cancel").textContent = t("cancel");
   document.getElementById("footer-text").textContent = t("footer");
   document.getElementById("lang-toggle").textContent = t("langToggle");
+  document.getElementById("ach-title").textContent = t("achTitle");
+  document.getElementById("ach-sub").textContent = t("achSub");
 
   // Re-apply mode-dependent labels
   const mainBtn = document.getElementById("main-action");
@@ -463,6 +639,7 @@ function applyLang() {
     hint.textContent = t("hintPractice");
     revealBtn.textContent = revealedInPractice ? t("hideAnswer") : t("showAnswer");
   }
+  renderAchievements();
 }
 
 function toggleLang() {
@@ -475,19 +652,64 @@ function toggleLang() {
 // Position 1 = first decimal digit after "3,". The leading "3," is shown as a fixed prefix.
 const PI_DIGITS = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491";
 
+// ─── Achievements ───────────────────────────────────────────
+// Curated milestones — fits within the 500-digit cap.
+const ACHIEVEMENTS = [
+  { threshold: 3,   emblem: "π",   no: { name: "Første smak",      sub: "3,14 — alles startpunkt" },
+                                    en: { name: "First Slice",      sub: "3.14 — everyone starts here" } },
+  { threshold: 10,  emblem: "10",  no: { name: "Tideren",           sub: "Første milepæl er passert" },
+                                    en: { name: "Decimator",        sub: "First milestone cleared" } },
+  { threshold: 15,  emblem: "🚀", no: { name: "NASA-godkjent",     sub: "Nok presisjon til interplanetær navigasjon" },
+                                    en: { name: "NASA Approved",    sub: "Enough precision for interplanetary navigation" } },
+  { threshold: 31,  emblem: "3.14", no: { name: "Pi-dagen",         sub: "3/14 — Pi-dagen selv" },
+                                    en: { name: "Pi Day",           sub: "3/14 — Pi Day itself" } },
+  { threshold: 37,  emblem: "∞",   no: { name: "Universkalibrert", sub: "Universets omkrets, ned til ett hydrogenatom" },
+                                    en: { name: "Cosmic Ruler",     sub: "Universe-scale precision, down to a hydrogen atom" } },
+  { threshold: 42,  emblem: "42",  no: { name: "Svaret",            sub: "Livet, universet og alt" },
+                                    en: { name: "The Answer",       sub: "Life, the universe, and everything" } },
+  { threshold: 43,  emblem: "69",  no: { name: "Nice.",             sub: "Du har akkurat passert din første «69» (siffer 42–43)" },
+                                    en: { name: "Nice.",            sub: "You just passed your first \"69\" (digits 42–43)" } },
+  { threshold: 50,  emblem: "50",  no: { name: "Halvt hundre",     sub: "Klassisk halvveis-milepæl" },
+                                    en: { name: "Half Century",     sub: "Classic halfway milestone" } },
+  { threshold: 100, emblem: "100", no: { name: "Hundreåringen",    sub: "Ekte forpliktelse" },
+                                    en: { name: "Centurion",        sub: "True commitment" } },
+  { threshold: 314, emblem: "π²",  no: { name: "Pi-energi",         sub: "Tematisk strøkent — som å pugge til siffer 3,14" },
+                                    en: { name: "Pi Power",         sub: "Thematically chef's-kiss — memorizing up to 3.14×100" } },
+  { threshold: 420, emblem: "420", no: { name: "Blaze It",          sub: "En forbannet bragd" },
+                                    en: { name: "Blaze It",         sub: "A cursed achievement" } },
+  { threshold: 500, emblem: "★",   no: { name: "Topp av siden",    sub: "Du har slått appen — alle 500 siffer" },
+                                    en: { name: "Max Mode",         sub: "You broke the app — all 500 digits" } },
+];
+
+// Tier thresholds for repeat-earnings: 1 = Standard, 10 = Bronze, 100 = Silver, 1000 = Gold, 10000 = Platinum.
+const TIER_THRESHOLDS = [1, 10, 100, 1000, 10000];
+function getTier(count) {
+  if (count <= 0) return -1; // locked
+  let tier = -1;
+  for (let i = 0; i < TIER_THRESHOLDS.length; i++) {
+    if (count >= TIER_THRESHOLDS[i]) tier = i;
+  }
+  return tier;
+}
+function formatCount(count) {
+  if (count >= 1000) return count.toLocaleString(lang === "no" ? "nb-NO" : "en-US");
+  return String(count);
+}
+
 // ─── State ──────────────────────────────────────────────────
 function getState() {
   try {
     const raw = localStorage.getItem("pipugger_v4");
     if (raw) return JSON.parse(raw);
   } catch(e) {}
-  return { maxKnown: 0, streak: 0, best: 0, todayDate: "", todayCount: 0 };
+  return { maxKnown: 0, streak: 0, best: 0, todayDate: "", todayCount: 0, achCounts: {} };
 }
 function saveState() {
   try { localStorage.setItem("pipugger_v4", JSON.stringify(state)); } catch(e) {}
 }
 
 let state = getState();
+if (!state.achCounts || typeof state.achCounts !== "object") state.achCounts = {};
 let mode = "learn";
 let rangeFrom = 1;
 let rangeTo = 10;
@@ -496,6 +718,9 @@ let practiceActive = false;
 let confirming = false;
 let revealedInPractice = false;
 let celebratedMilestones = new Set();
+let justUnlocked = new Set();
+// Per typing-session: thresholds already counted, so backspace+retype can't farm.
+let thresholdsHitThisSession = new Set();
 
 const today = new Date().toISOString().slice(0,10);
 if (state.todayDate !== today) { state.todayDate = today; state.todayCount = 0; saveState(); }
@@ -515,6 +740,7 @@ function setMode(m) {
   practiceActive = false;
   revealedInPractice = false;
   celebratedMilestones.clear();
+  thresholdsHitThisSession.clear();
   hideBanner();
   document.getElementById("feedback").textContent = "";
 
@@ -546,6 +772,7 @@ function onRangeChange() {
   practiceActive = false;
   revealedInPractice = false;
   celebratedMilestones.clear();
+  thresholdsHitThisSession.clear();
   hideBanner();
   document.getElementById("feedback").textContent = "";
   render();
@@ -582,6 +809,7 @@ function resetAttempt() {
   typed = "";
   revealedInPractice = false;
   celebratedMilestones.clear();
+  thresholdsHitThisSession.clear();
   hideBanner();
   document.getElementById("feedback").textContent = "";
   render();
@@ -611,12 +839,13 @@ function cancelReset() {
   document.getElementById("confirm-reset").classList.remove("visible");
 }
 function doReset() {
-  state = { maxKnown: 0, streak: 0, best: 0, todayDate: today, todayCount: 0 };
+  state = { maxKnown: 0, streak: 0, best: 0, todayDate: today, todayCount: 0, achCounts: {} };
   saveState();
   confirming = false;
   document.getElementById("confirm-reset").classList.remove("visible");
   applyPreset(1, 10);
   setMode("learn");
+  renderAchievements();
 }
 
 // ─── Render ─────────────────────────────────────────────────
@@ -710,6 +939,129 @@ function hideBanner() {
   document.getElementById("banner").classList.remove("visible");
 }
 
+// ─── Achievements rendering ─────────────────────────────────
+function renderAchievements() {
+  const grid = document.getElementById("ach-grid");
+  if (!grid) return;
+  let html = "";
+  for (const a of ACHIEVEMENTS) {
+    const count = state.achCounts[a.threshold] || 0;
+    const tier = getTier(count); // -1 locked, 0..4 standard..platinum
+    const unlocked = tier >= 0;
+    const fresh = unlocked && justUnlocked.has(a.threshold);
+    const info = lang === "no" ? a.no : a.en;
+    const tierName = tier >= 0 ? strings[lang].tierNames[tier] : "";
+    const cls = "ach " + (unlocked ? `unlocked tier-${tier}` : "locked") + (fresh ? " just-unlocked" : "");
+    const tooltip = unlocked
+      ? `${info.name} (${tierName}) — ${info.sub}`
+      : `${a.threshold} ${strings[lang].digit}: ${strings[lang].achLockedName}`;
+
+    // Adjust font-size for longer emblems
+    const emblem = unlocked ? a.emblem : "?";
+    const len = [...emblem].length; // codepoint length, handles emoji
+    let fs = 20;
+    if (len === 2) fs = 18;
+    else if (len === 3) fs = 15;
+    else if (len >= 4) fs = 12;
+    const isEmoji = /\p{Extended_Pictographic}/u.test(emblem);
+    if (isEmoji) fs = 22;
+
+    // Tier decoration: thicker outer ring + small tier-pip dots at the top for higher tiers.
+    const ringWidth = unlocked ? (1.5 + Math.min(tier, 2) * 0.4) : 1.5;
+    const pips = unlocked && tier >= 1
+      ? Array.from({ length: Math.min(tier, 4) }, (_, i) => {
+          // Place 1..4 pips arrayed across the top of the badge
+          const total = Math.min(tier, 4);
+          const spread = 8; // pixels between pips
+          const startX = 32 - (total - 1) * spread / 2;
+          const x = startX + i * spread;
+          return `<circle cx="${x}" cy="11" r="1.6" fill="currentColor"/>`;
+        }).join("")
+      : "";
+
+    html += `
+      <div class="${cls}" title="${escapeAttr(tooltip)}">
+        <svg class="ach-svg" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="${ringWidth}"${unlocked ? "" : ' stroke-dasharray="2 3" opacity="0.6"'}/>
+          <circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="0.5" opacity="${unlocked ? 0.5 : 0.3}"/>
+          <line x1="32" y1="3" x2="32" y2="7" stroke="currentColor" stroke-width="1.2" opacity="${unlocked ? 1 : 0.5}"/>
+          <line x1="32" y1="57" x2="32" y2="61" stroke="currentColor" stroke-width="1.2" opacity="${unlocked ? 1 : 0.5}"/>
+          <line x1="3" y1="32" x2="7" y2="32" stroke="currentColor" stroke-width="1.2" opacity="${unlocked ? 1 : 0.5}"/>
+          <line x1="57" y1="32" x2="61" y2="32" stroke="currentColor" stroke-width="1.2" opacity="${unlocked ? 1 : 0.5}"/>
+          ${pips}
+          <text x="32" y="${32 + fs/3}" font-family="Fraunces, Georgia, serif" font-size="${fs}" font-weight="300" fill="currentColor" text-anchor="middle">${escapeText(emblem)}</text>
+        </svg>
+        <div class="ach-name">${unlocked ? escapeText(info.name) : "—"}</div>
+        ${unlocked ? `<div class="ach-tier">${escapeText(tierName)}</div>` : ""}
+        <div class="ach-meta">${a.threshold} ${strings[lang].achDigitsShort}${unlocked ? ` · <span class="count">${formatCount(count)}×</span>` : ""}</div>
+      </div>
+    `;
+  }
+  grid.innerHTML = html;
+}
+
+function escapeText(s) {
+  return String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+function escapeAttr(s) {
+  return String(s).replace(/["&<>]/g, c => ({ '"': "&quot;", "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+// Called after each correctly-typed digit during practice.
+// Awards the achievement when its threshold position is reached with a clean prefix.
+// Returns true if a count was incremented (so we can save).
+function awardIfThreshold(currentPos) {
+  const ach = ACHIEVEMENTS.find(a => a.threshold === currentPos);
+  if (!ach) return false;
+  if (thresholdsHitThisSession.has(currentPos)) return false; // anti-farm: each threshold counts once per session
+  thresholdsHitThisSession.add(currentPos);
+
+  const prevCount = state.achCounts[currentPos] || 0;
+  const newCount = prevCount + 1;
+  state.achCounts[currentPos] = newCount;
+
+  const prevTier = getTier(prevCount);
+  const newTier = getTier(newCount);
+
+  justUnlocked.add(currentPos);
+  // Clear the pop-flag after the animation so it doesn't re-trigger on every render.
+  setTimeout(() => { justUnlocked.delete(currentPos); renderAchievements(); }, 700);
+
+  // Toast only on tier transitions (first unlock or upgrade) — avoids spam mid-grind.
+  if (newTier > prevTier) {
+    showAchToast(ach, newCount, newTier, prevTier);
+  }
+  return true;
+}
+
+function showAchToast(ach, count, newTier, prevTier) {
+  const info = lang === "no" ? ach.no : ach.en;
+  const toast = document.getElementById("ach-toast");
+  const tierName = strings[lang].tierNames[newTier];
+
+  // Eyebrow text: "Achievement unlocked" on first time, "Upgraded to <tier>" after.
+  const eyebrow = (prevTier < 0)
+    ? strings[lang].achToastUnlock
+    : strings[lang].achToastUpgrade(tierName);
+
+  // Sub: on first unlock show the lore line, on upgrades show the count milestone.
+  const sub = (prevTier < 0)
+    ? info.sub
+    : strings[lang].tierUpgradeSub(count);
+
+  document.getElementById("ach-toast-eyebrow").textContent = eyebrow;
+  document.getElementById("ach-toast-title").textContent = info.name;
+  document.getElementById("ach-toast-sub").textContent = sub;
+
+  // Tier-coloured border and eyebrow.
+  toast.classList.remove("visible", "tier-0", "tier-1", "tier-2", "tier-3", "tier-4");
+  toast.classList.add("tier-" + newTier);
+  void toast.offsetWidth; // force reflow to restart transition
+  toast.classList.add("visible");
+  clearTimeout(showAchToast._t);
+  showAchToast._t = setTimeout(() => toast.classList.remove("visible"), 4500);
+}
+
 // ─── Keyboard handler ───────────────────────────────────────
 document.addEventListener("keydown", (e) => {
   if (mode !== "practice" || !practiceActive || revealedInPractice) return;
@@ -731,6 +1083,12 @@ document.addEventListener("keydown", (e) => {
   const fb = document.getElementById("feedback");
   const currentPos = rangeFrom + typed.length - 1;
 
+  // Compute prefix-correctness once: did everything from rangeFrom up to here go right?
+  let prefixCorrect = true;
+  for (let i = 0; i < typed.length; i++) {
+    if (typed[i] !== PI_DIGITS[rangeFrom - 1 + i]) { prefixCorrect = false; break; }
+  }
+
   if (pressed !== expectedDigit) {
     fb.textContent = t("digitWrong")(currentPos, pressed, expectedDigit);
     fb.className = "feedback bad";
@@ -739,28 +1097,31 @@ document.addEventListener("keydown", (e) => {
   } else {
     fb.textContent = t("digitOk")(currentPos);
     fb.className = "feedback ok";
+
+    // Award achievements per-digit as soon as you correctly reach the threshold position.
+    if (prefixCorrect) {
+      const awarded = awardIfThreshold(currentPos);
+      // Update maxKnown incrementally — your "best memorized" reflects real-time progress.
+      const prevMax = state.maxKnown;
+      if (currentPos > prevMax) state.maxKnown = currentPos;
+      if (awarded || state.maxKnown > prevMax) {
+        saveState();
+        renderAchievements();
+      }
+    }
   }
 
   if (currentPos % 10 === 0 && !celebratedMilestones.has(currentPos)) {
     celebratedMilestones.add(currentPos);
-    let allOk = true;
-    for (let i = 0; i < typed.length; i++) {
-      if (typed[i] !== PI_DIGITS[rangeFrom - 1 + i]) { allOk = false; break; }
-    }
-    if (allOk) showBanner(t("milestoneOk")(currentPos), true);
+    if (prefixCorrect) showBanner(t("milestoneOk")(currentPos), true);
     else showBanner(t("milestoneBad")(currentPos), false);
   }
 
   if (typed.length === rangeLen) {
-    let allOk = true;
-    for (let i = 0; i < typed.length; i++) {
-      if (typed[i] !== PI_DIGITS[rangeFrom - 1 + i]) { allOk = false; break; }
-    }
-    if (allOk) {
+    if (prefixCorrect) {
       state.streak++;
       if (state.streak > state.best) state.best = state.streak;
       state.todayCount += rangeLen;
-      if (rangeTo > state.maxKnown) state.maxKnown = rangeTo;
       saveState();
       fb.textContent = t("allCorrect")(rangeFrom, rangeTo, state.streak);
       fb.className = "feedback ok";
@@ -780,6 +1141,7 @@ document.getElementById("typing-area").addEventListener("click", focusInput);
 applyLang();
 setMode("learn");
 render();
+renderAchievements();
 </script>
 </body>
 </html>
