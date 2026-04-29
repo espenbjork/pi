@@ -714,6 +714,8 @@ function hideBanner() {
 document.addEventListener("keydown", (e) => {
   if (mode !== "practice" || !practiceActive || revealedInPractice) return;
   if (confirming) return;
+  const active = document.activeElement;
+  if (active && active.id !== "hidden-input" && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
 
   if (e.key === "Backspace") { e.preventDefault(); deleteLast(); return; }
   if (!/^[0-9]$/.test(e.key)) return;
